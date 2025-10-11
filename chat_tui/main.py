@@ -170,6 +170,13 @@ class ChatTUIApp(App):
             
             await user_list.load_users(self.api_client)
             await chat_list.load_chats(self.api_client)
+            # Activate the Chats tab by default so the chat list is visible/selected
+            try:
+                tabs = self.query_one(Tabs)
+                if tabs and tabs.query_one("#chats_tab"):
+                    tabs.active = "chats_tab"
+            except Exception:
+                pass
             
             # Start WebSocket connection for real-time updates
             await self.api_client.start_websocket(self.on_websocket_message)
