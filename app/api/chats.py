@@ -24,7 +24,7 @@ def create_chat(
     """Create a new chat session"""
     # Validate that all user IDs exist
     users = db.query(User).filter(User.user_id.in_(chat_data.user_ids)).all()
-    
+
     if len(users) != len(chat_data.user_ids):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -108,7 +108,7 @@ def send_message(
         Chat.chat_id == chat_id,
         User.user_id == current_user.user_id
     ).first()
-    
+
     if not chat:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -121,7 +121,7 @@ def send_message(
         sender_id=current_user.user_id,
         encrypted_content=message_data.encrypted_content
     )
-    
+
     db.add(message)
     db.commit()
     db.refresh(message)

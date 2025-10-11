@@ -57,7 +57,9 @@ class MessageBase(BaseModel):
 
 
 class MessageCreate(MessageBase):
-    chat_id: int
+    """Message create payload. `chat_id` is taken from the path parameter.
+    Keep body minimal: only encrypted_content is required from the client.
+    """
 
 
 class MessageResponse(MessageBase):

@@ -5,8 +5,8 @@ python-multipart==0.0.6
 websockets==12.0
 
 # Database
-sqlalchemy==2.0.23
-asyncpg==0.29.0
+sqlalchemy==2.0.44
+asyncpg==0.30.0
 alembic==1.12.1
 
 # Authentication
@@ -14,10 +14,11 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
 # Configuration
-pydantic==2.5.0
+pydantic==2.12.0
 pydantic-settings==2.1.0
 
 # Development (optional)
 pytest==7.4.3
 pytest-asyncio==0.21.1
 httpx==0.25.2
+psycopg2-binary==2.9.11
