@@ -68,7 +68,8 @@ class ChatList(Vertical):
     
     async def on_mount(self):
         """Initialize the chat list"""
-        self.display = False  # Hidden by default, shown when chats tab is active
+        # Show chats by default so users see existing chats immediately
+        self.display = True
     
     async def load_chats(self, api_client):
         """Load chats from the API"""
