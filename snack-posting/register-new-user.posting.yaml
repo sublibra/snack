@@ -1,0 +1,15 @@
+name: Register new user
+method: POST
+url: http://localhost:8000/api/v1/register
+body:
+  content: |-
+    {
+      "username": "tilde",
+      "password": "test"
+    }
+  content_type: application/json
+headers:
+- name: Content-Type
+  value: application/json
+scripts:
+  on_response: save_auth.py

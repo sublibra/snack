@@ -1,0 +1,22 @@
+name: Get a chat history
+url: http://localhost:8000/api/v1/chats/:chat_id/messages
+body:
+  content: |-
+    {
+      "encrypted_content": "Hej",
+      "chat_id": $chat_id
+    }
+  content_type: application/json
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer $access_token
+params:
+- name: page
+  value: '1'
+- name: limit
+  value: '10'
+path_params:
+- name: chat_id
+  value: $chat_id

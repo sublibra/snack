@@ -1,0 +1,15 @@
+name: Login
+method: POST
+url: http://localhost:8000/api/v1/login
+body:
+  content: |-
+    {
+      "username": "jonas",
+      "password": "test"
+    }
+  content_type: application/json
+headers:
+- name: Content-Type
+  value: application/json
+scripts:
+  on_response: save_auth.py

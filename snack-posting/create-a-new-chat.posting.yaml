@@ -1,0 +1,18 @@
+name: Create a new chat
+method: POST
+url: http://localhost:8000/api/v1/chats
+body:
+  content: |-
+    {
+      "user_ids": [
+        2
+      ]
+    }
+  content_type: application/json
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer $access_token
+scripts:
+  on_response: save_chat_it.py
