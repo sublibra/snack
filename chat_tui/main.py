@@ -184,22 +184,27 @@ class ChatTUIApp(App):
         except Exception as e:
             self.notify(f"Error loading data: {e}", severity="error")
     
-    async def on_websocket_message(self, message_data: Dict[str, Any]):
+    async def on_websocket_message(self, message: Dict[str, Any]):
         """Handle incoming WebSocket messages"""
         try:
-            # Update message view if it's for the current chat
-            if (message_data.get("chat_id") == self.selected_chat_id and
-                message_data.get("sender_id") != self.current_user.get("user_id")):
-                
-                message_view = self.query_one("#message_view", MessageView)
-                await message_view.add_message(message_data)
-                
+            message_type = message.get("type")
+            if message_type != "message":
+                return
+
+            message_data = message.get("data", {})
+
             # Show notification for new messages
             if message_data.get("sender_id") != self.current_user.get("user_id"):
                 self.new_message_count += 1
                 sender = message_data.get("sender_username", "Someone")
                 self.notify(f"New message from {sender}")
-                
+
+            # Update message view if it's for the current chat
+            if message_data.get("chat_id") == self.selected_chat_id:
+                message_view = self.query_one("#message_view", MessageView)
+                await message_view.add_message(message_data)
+                message_view.scroll_to_bottom()
+
         except Exception as e:
             self.notify(f"Error handling message: {e}", severity="error")
     

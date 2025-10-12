@@ -81,7 +81,7 @@ class MessageView(Vertical):
             header.update(f"Chat {self.current_chat_id} - No messages yet")
         
         # Scroll to bottom to show latest messages
-        await self._scroll_to_bottom()
+        self.scroll_to_bottom()
     
     async def add_message(self, message_data: Dict[str, Any]):
         """Add a new message to the view"""
@@ -99,7 +99,7 @@ class MessageView(Vertical):
         listview.append(item)
         
         # Scroll to bottom to show new message
-        await self._scroll_to_bottom()
+        self.scroll_to_bottom()
     
     async def _update_message_list(self):
         """Update the displayed message list"""
@@ -122,14 +122,15 @@ class MessageView(Vertical):
             item = MessageItem(message, self.current_user_id or 0)
             listview.append(item)
     
-    async def _scroll_to_bottom(self):
-        """Scroll to the bottom of the message list"""
+    def scroll_to_bottom(self):
+        """Scroll to the bottom of the message list."""
         try:
             scroll_view = self.query_one("#messages_scroll", ScrollView)
-            # Schedule scroll to happen after layout
-            self.call_after_refresh(lambda: scroll_view.scroll_end(animate=False))
-        except:
-            pass  # Ignore if scrolling fails
+            # Schedule scroll to happen after layout is complete
+            self.call_after_refresh(scroll_view.scroll_end, animate=False)
+        except Exception:
+            # It's okay if this fails (e.g., widget not fully mounted)
+            pass
     
     def clear_messages(self):
         """Clear all messages from the view"""
