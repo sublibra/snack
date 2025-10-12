@@ -20,6 +20,11 @@ class LoginScreen(Screen):
         Binding("ctrl+q", "quit", "Quit"),
         Binding("tab", "toggle_mode", "Register/Login"),
         Binding("enter", "submit", "Submit"),
+        # Arrow key navigation between fields/buttons
+        Binding("up", "focus_prev", "Focus Previous"),
+        Binding("left", "focus_prev", "Focus Previous"),
+        Binding("down", "focus_next", "Focus Next"),
+        Binding("right", "focus_next", "Focus Next"),
     ]
     
     CSS = """
@@ -78,8 +83,10 @@ class LoginScreen(Screen):
                     id="password_input", 
                     classes="form_input"
                 )
-                yield Button("Login", id="submit_button", variant="primary", classes="form_button")
-                yield Button("Switch to Register", id="toggle_button", classes="form_button")
+                # Place the two action buttons on one horizontal row with Register to the right
+                with Horizontal():
+                    yield Button("Login", id="submit_button", variant="primary", classes="form_button")
+                    yield Button("Tab to Register", id="toggle_button", classes="form_button")
                 yield Static("", id="status_message", classes="form_label")
     
     async def on_mount(self):
@@ -173,8 +180,41 @@ class LoginScreen(Screen):
         if self.is_register_mode:
             mode_label.update("Register new account")
             submit_button.label = "Register"
-            toggle_button.label = "Switch to Login"
+            toggle_button.label = "Tab to Login"
         else:
             mode_label.update("Login to continue")
             submit_button.label = "Login"
-            toggle_button.label = "Switch to Register"
+            toggle_button.label = "Tab to Register"
+
+    # Focus navigation helpers
+    def _focus_relative(self, delta: int = 1) -> None:
+        """Move focus among the form widgets in a fixed order."""
+        order = ["username_input", "password_input", "submit_button", "toggle_button"]
+        focused = None
+        try:
+            focused = getattr(self.app, "focused", None)
+        except Exception:
+            focused = None
+
+        focused_id = getattr(focused, "id", None)
+        try:
+            idx = order.index(focused_id) if focused_id in order else -1
+        except Exception:
+            idx = -1
+
+        # compute next index
+        next_idx = (idx + delta) % len(order)
+        try:
+            widget = self.query_one(f"#{order[next_idx]}")
+            widget.focus()
+        except Exception:
+            # ignore focus errors
+            pass
+
+    async def action_focus_next(self) -> None:
+        """Action bound to down/right - move focus forward"""
+        self._focus_relative(1)
+
+    async def action_focus_prev(self) -> None:
+        """Action bound to up/left - move focus backward"""
+        self._focus_relative(-1)
