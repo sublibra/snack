@@ -113,8 +113,8 @@ class ChatTUIApp(App):
     # Reactive attributes
     current_user = reactive(None)
     selected_chat_id = reactive(None)
-    new_message_count = reactive(0)
-    
+    unread_chats = reactive(set())
+
     def __init__(self):
         super().__init__()
         self.api_client = SnackAPIClient()
@@ -192,15 +192,20 @@ class ChatTUIApp(App):
                 return
 
             message_data = message.get("data", {})
+            chat_id = message_data.get("chat_id")
+
+            # Mark chat as unread if it's not the currently selected one
+            if chat_id and chat_id != self.selected_chat_id:
+                self.unread_chats.add(chat_id)
+                self.query_one(ChatList).refresh()
 
             # Show notification for new messages
             if message_data.get("sender_id") != self.current_user.get("user_id"):
-                self.new_message_count += 1
                 sender = message_data.get("sender_username", "Someone")
                 self.notify(f"New message from {sender}")
 
             # Update message view if it's for the current chat
-            if message_data.get("chat_id") == self.selected_chat_id:
+            if chat_id == self.selected_chat_id:
                 message_view = self.query_one("#message_view", MessageView)
                 await message_view.add_message(message_data)
                 message_view.scroll_to_bottom()
@@ -285,16 +290,22 @@ class ChatTUIApp(App):
             self.notify(f"Error creating chat: {e}", severity="error")
     
     async def select_chat(self, chat_id: int):
-        """Select and load a chat"""
+        """Select and load a chat, and mark it as read."""
         self.selected_chat_id = chat_id
         
+        # Mark chat as read
+        if chat_id in self.unread_chats:
+            self.unread_chats.remove(chat_id)
+            self.query_one(ChatList).refresh()
+
         try:
             # Load messages for the chat
             messages = await self.api_client.get_chat_messages(chat_id)
             
             # Update message view
             message_view = self.query_one("#message_view", MessageView)
-            await message_view.load_messages(messages)
+            await message_view.load_messages(messages, chat_id=chat_id)
+            message_view.scroll_to_bottom()
             
         except Exception as e:
             self.notify(f"Error loading chat: {e}", severity="error")
