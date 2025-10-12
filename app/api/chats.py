@@ -137,7 +137,7 @@ async def send_message(
             "chat_id": chat_id,
             "sender_id": current_user.user_id,
             "sender_username": current_user.username,
-            "content": message_data.encrypted_content,
+            "encrypted_content": message_data.encrypted_content,
             "created_at": message.created_at.isoformat()
         }
     }

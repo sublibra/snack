@@ -123,7 +123,7 @@ async def handle_chat_message(message_data: dict, user: User, db: Session):
                 "chat_id": chat_id,
                 "sender_id": user.user_id,
                 "sender_username": user.username,
-                "content": content,
+                "encrypted_content": content,
                 "created_at": message.created_at.isoformat()
             }
         }
