@@ -7,74 +7,9 @@ from app.db.database import get_db
 from app.models.models import User, Chat, Message
 from app.core.auth import verify_token
 from app.schemas.schemas import WSMessage, WSMessageCreate
+from app.core.connection_manager import manager
 
 router = APIRouter()
-
-
-class ConnectionManager:
-    def __init__(self):
-        # Store active connections: {user_id: {websocket, ...}}
-        self.active_connections: Dict[int, Set[WebSocket]] = {}
-        # Store user sessions: {websocket: user_id}
-        self.websocket_users: Dict[WebSocket, int] = {}
-
-    async def connect(self, websocket: WebSocket, user_id: int):
-        """Accept a new WebSocket connection"""
-        await websocket.accept()
-        
-        if user_id not in self.active_connections:
-            self.active_connections[user_id] = set()
-        
-        self.active_connections[user_id].add(websocket)
-        self.websocket_users[websocket] = user_id
-
-    def disconnect(self, websocket: WebSocket):
-        """Remove a WebSocket connection"""
-        if websocket in self.websocket_users:
-            user_id = self.websocket_users[websocket]
-            
-            # Remove websocket from user's connections
-            if user_id in self.active_connections:
-                self.active_connections[user_id].discard(websocket)
-                
-                # Remove user entry if no connections left
-                if not self.active_connections[user_id]:
-                    del self.active_connections[user_id]
-            
-            # Remove websocket from user mapping
-            del self.websocket_users[websocket]
-
-    async def send_personal_message(self, message: str, user_id: int):
-        """Send a message to all connections of a specific user"""
-        if user_id in self.active_connections:
-            disconnected_websockets = set()
-            
-            for websocket in self.active_connections[user_id]:
-                try:
-                    await websocket.send_text(message)
-                except:
-                    # Connection is broken, mark for removal
-                    disconnected_websockets.add(websocket)
-            
-            # Clean up broken connections
-            for websocket in disconnected_websockets:
-                self.disconnect(websocket)
-
-    async def broadcast_to_chat(self, message: str, chat_id: int, db: Session, exclude_user_id: int = None):
-        """Send a message to all members of a chat"""
-        # Get chat members
-        chat = db.query(Chat).filter(Chat.chat_id == chat_id).first()
-        if not chat:
-            return
-        
-        for member in chat.members:
-            if exclude_user_id and member.user_id == exclude_user_id:
-                continue
-            await self.send_personal_message(message, member.user_id)
-
-
-# Global connection manager instance
-manager = ConnectionManager()
 
 
 async def get_websocket_user(
