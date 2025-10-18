@@ -35,6 +35,7 @@ dependencies = [
     "passlib[bcrypt]==1.7.4",
     "pydantic>=2.12.0,<3",
     "pydantic-settings==2.1.0",
+    "ruff>=0.14.0",
 ]
 
 [project.optional-dependencies]
@@ -45,7 +46,7 @@ dev = [
     "psycopg2-binary==2.9.11",
     "black==23.11.0",
     "isort==5.12.0",
-    "flake8==6.1.0",
+    "ruff==0.14.0",
     "mypy==1.7.1",
 ]
 
@@ -98,3 +99,14 @@ strict_equality = true
 [[tool.mypy.overrides]]
 module = ["jose.*", "passlib.*", "alembic.*"]
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 88
+exclude = [
+    "./.venv",
+    "./.eggs",
+    "./build",
+    "./dist",
+    "./.mypy_cache",
+]
+extend-select = ["I", "E", "F", "W", "C", "N"]
