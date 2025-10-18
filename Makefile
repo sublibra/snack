@@ -18,12 +18,11 @@ test: ## Run tests
 	uv run pytest
 
 lint: ## Run linting
-	uv run flake8 app tests
+	uv run ruff check app tests
 	uv run mypy app
 
 format: ## Format code
-	uv run black app tests
-	uv run isort app tests
+	uv run ruff format app tests
 
 clean: ## Clean up cache and temporary files
 	find . -type d -name __pycache__ -delete
@@ -50,6 +49,14 @@ docker-up: ## Start with Docker Compose
 
 docker-down: ## Stop Docker Compose
 	docker-compose down
+
+db-up: ## Start only the Postgres DB container (useful for running the backend on host)
+	# Start the db service only so the host process can connect to localhost:5432
+	docker-compose up -d db
+
+db-down: ## Stop only the Postgres DB container
+	docker-compose stop db || true
+	docker-compose rm -f db || true
 
 docker-logs: ## View Docker logs
 	docker-compose logs -f backend
