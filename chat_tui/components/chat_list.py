@@ -14,9 +14,10 @@ from datetime import datetime
 class ChatListItem(ListItem):
     """Individual chat item in the list"""
     
-    def __init__(self, chat_data: Dict[str, Any], current_user_id: int, *args, **kwargs):
+    def __init__(self, chat_data: Dict[str, Any], current_user_id: int, is_unread: bool, *args, **kwargs):
         self.chat_data = chat_data
         self.current_user_id = current_user_id
+        self.is_unread = is_unread
         super().__init__(*args, **kwargs)
         
     def compose(self):
@@ -49,7 +50,8 @@ class ChatListItem(ListItem):
             time_str = ""
         
         # Create the display text
-        display_text = f"💬 {chat_name}"
+        indicator = "🗣️" if self.is_unread else "💬"
+        display_text = f"{indicator} {chat_name}"
         if time_str:
             display_text += f"\n   {time_str}"
         
@@ -91,6 +93,9 @@ class ChatList(Vertical):
         listview = self.query_one("#chats_listview", ListView)
         listview.clear()
         
+        # Get unread chats from the app
+        unread_chats = self.app.unread_chats if hasattr(self.app, 'unread_chats') else set()
+
         # Sort chats by creation time (newest first)
         sorted_chats = sorted(
             self.chats,
@@ -99,7 +104,8 @@ class ChatList(Vertical):
         )
         
         for chat in sorted_chats:
-            item = ChatListItem(chat, self.current_user_id or 0)
+            is_unread = chat.get("chat_id") in unread_chats
+            item = ChatListItem(chat, self.current_user_id or 0, is_unread)
             listview.append(item)
     
     async def on_list_view_selected(self, event: ListView.Selected) -> None:

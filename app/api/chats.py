@@ -1,3 +1,5 @@
+import asyncio
+import json
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
@@ -11,6 +13,7 @@ from app.schemas.schemas import (
     MessageResponse
 )
 from app.core.auth import get_current_user
+from app.core.connection_manager import manager
 
 router = APIRouter()
 
@@ -96,13 +99,13 @@ def get_chat_messages(
 
 
 @router.post("/chats/{chat_id}/messages", response_model=MessageResponse)
-def send_message(
+async def send_message(
     chat_id: int,
     message_data: MessageCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Send a message to a chat"""
+    """Send a message to a chat and broadcast it to WebSocket clients."""
     # Verify user is a member of the chat
     chat = db.query(Chat).join(Chat.members).filter(
         Chat.chat_id == chat_id,
@@ -126,4 +129,25 @@ def send_message(
     db.commit()
     db.refresh(message)
     
+    # Prepare message payload for broadcasting
+    message_payload = {
+        "type": "message",
+        "data": {
+            "message_id": message.message_id,
+            "chat_id": chat_id,
+            "sender_id": current_user.user_id,
+            "sender_username": current_user.username,
+            "encrypted_content": message_data.encrypted_content,
+            "created_at": message.created_at.isoformat()
+        }
+    }
+
+    # Broadcast the message to all members of the chat
+    await manager.broadcast_to_chat(
+        json.dumps(message_payload),
+        chat_id,
+        db,
+        exclude_user_id=current_user.user_id
+    )
+
     return message
