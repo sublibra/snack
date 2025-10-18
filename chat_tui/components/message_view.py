@@ -127,7 +127,7 @@ class MessageView(Vertical):
         try:
             scroll_view = self.query_one("#messages_scroll", ScrollView)
             # Schedule scroll to happen after layout is complete
-            self.call_after_refresh(scroll_view.scroll_end, animate=False)
+            self.call_after_refresh(lambda: scroll_view.scroll_end(animate=False))
         except Exception:
             # It's okay if this fails (e.g., widget not fully mounted)
             pass
