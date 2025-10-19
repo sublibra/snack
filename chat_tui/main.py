@@ -118,7 +118,7 @@ class ChatTUIApp(App):
 
     def __init__(self):
         super().__init__()
-        self.api_client = SnackAPIClient(base_url=os.environ.get("SERVER_URL", "localhost:8000"))
+        self.api_client = SnackAPIClient(base_url=os.environ.get("SERVER_URL", "http://localhost:8000"))
         self.current_chat_messages = []
         self.notification_sound = True
         
