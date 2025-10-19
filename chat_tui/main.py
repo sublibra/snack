@@ -110,9 +110,7 @@ class ChatTUIApp(App):
         Binding("ctrl+c", "toggle_chats", "Toggle Chats"),
         Binding("escape", "focus_input", "Focus Input"),
     ]
-
-    server_url = os.environ.get("SERVER_URL", "localhost:8000")
-    
+   
     # Reactive attributes
     current_user = reactive(None)
     selected_chat_id = reactive(None)
@@ -120,7 +118,7 @@ class ChatTUIApp(App):
 
     def __init__(self):
         super().__init__()
-        self.api_client = SnackAPIClient(base_url="http://" + self.server_url)
+        self.api_client = SnackAPIClient(base_url=os.environ.get("SERVER_URL", "localhost:8000"))
         self.current_chat_messages = []
         self.notification_sound = True
         
