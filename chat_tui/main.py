@@ -5,6 +5,7 @@ Main TUI application built with Textual framework
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import asyncio
+import os
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
@@ -109,6 +110,8 @@ class ChatTUIApp(App):
         Binding("ctrl+c", "toggle_chats", "Toggle Chats"),
         Binding("escape", "focus_input", "Focus Input"),
     ]
+
+    server_url = os.environ.get("SERVER_URL", "localhost:8000")
     
     # Reactive attributes
     current_user = reactive(None)
@@ -117,7 +120,7 @@ class ChatTUIApp(App):
 
     def __init__(self):
         super().__init__()
-        self.api_client = SnackAPIClient()
+        self.api_client = SnackAPIClient(base_url="http://" + self.server_url)
         self.current_chat_messages = []
         self.notification_sound = True
         
